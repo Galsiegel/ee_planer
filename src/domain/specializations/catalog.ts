@@ -1,8 +1,10 @@
-import type { TrackId, TrackSpecializationCatalog } from '../../types';
+import type { TrackId, TrackSpecializationCatalog, SpecializationGroupYearVariant } from '../../types';
 import {
   buildTrackSpecializationCatalogs,
   TRACK_SPECIALIZATION_FOLDERS,
+  applySpecializationGroupYearVariant,
 } from './engine';
+import { CS_SPECIALIZATION_YEAR_VARIANTS } from '../../data/specializations/cs_specializations';
 
 const SPECIALIZATION_FILE_CONTENTS = import.meta.glob(
   '/files/קבוצות התמחות/*/*.json',
@@ -24,10 +26,32 @@ const SPECIALIZATION_CATALOGS = buildTrackSpecializationCatalogs(
   ) as Record<TrackId, { path: string; content: string }[]>,
 );
 
+const TRACK_SPECIALIZATION_YEAR_VARIANTS: Partial<Record<TrackId, Record<string, Record<number, SpecializationGroupYearVariant>>>> = {
+  cs: CS_SPECIALIZATION_YEAR_VARIANTS,
+};
+
 const REPORTED_TRACKS = new Set<TrackId>();
 
-export function getTrackSpecializationCatalog(trackId: TrackId): TrackSpecializationCatalog {
-  return SPECIALIZATION_CATALOGS[trackId];
+export function getTrackSpecializationCatalog(
+  trackId: TrackId,
+  catalogYear?: number | null,
+): TrackSpecializationCatalog {
+  const catalog = SPECIALIZATION_CATALOGS[trackId];
+  if (!catalogYear) return catalog;
+
+  const trackVariants = TRACK_SPECIALIZATION_YEAR_VARIANTS[trackId];
+  if (!trackVariants) return catalog;
+
+  return {
+    ...catalog,
+    groups: catalog.groups.map((group) => {
+      const groupVariants = trackVariants[group.name];
+      if (!groupVariants) return group;
+      const variant = groupVariants[catalogYear];
+      if (!variant) return group;
+      return applySpecializationGroupYearVariant(group, variant);
+    }),
+  };
 }
 
 export function reportTrackSpecializationDiagnostics(trackId: TrackId): void {

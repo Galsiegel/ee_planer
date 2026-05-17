@@ -98,7 +98,7 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     markCloudSyncSettled: state.markCloudSyncSettled,
     copyShareReviewToEditableVersion: state.copyShareReviewToEditableVersion,
   })));
-  const specializationCatalog = getTrackSpecializationCatalog(trackDef.id);
+  const specializationCatalog = getTrackSpecializationCatalog(trackDef.id, catalogYear);
   const specs = specializationCatalog.groups;
   const weightedAverage = useWeightedAverage(courses);
   const progress = useRequirementsProgress(courses, trackDef, specializationCatalog, weightedAverage);

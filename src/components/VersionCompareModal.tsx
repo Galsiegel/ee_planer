@@ -41,7 +41,7 @@ function VersionColumn({
 }: VersionColumnProps) {
   const plan = version.plan;
   const trackDef = trackDefs.find((t) => t.id === plan.trackId) ?? null;
-  const catalog = plan.trackId ? getTrackSpecializationCatalog(plan.trackId) : null;
+  const catalog = plan.trackId ? getTrackSpecializationCatalog(plan.trackId, plan.catalogYear) : null;
   const noAdditionalCreditCourseIds = useMemo(
     () => getNoAdditionalCreditCourseIds(
       computeNoAdditionalCreditConflicts(courses, {

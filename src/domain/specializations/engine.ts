@@ -6,6 +6,7 @@ import type {
   SpecializationDiagnostic,
   SpecializationGroup,
   SpecializationGroupEvaluation,
+  SpecializationGroupYearVariant,
   SpecializationMode,
   SpecializationMutualExclusionRule,
   SpecializationReplacementRule,
@@ -887,6 +888,52 @@ function collectRuleOptions(rule: SpecializationChoiceRule | null): Specializati
     }
   }
   return result;
+}
+
+export function applySpecializationGroupYearVariant(
+  group: SpecializationGroup,
+  variant: SpecializationGroupYearVariant,
+): SpecializationGroup {
+  const singleReq = group.requirementsByMode.single;
+  if (!singleReq) return group;
+
+  const courseMap = new Map(group.courses.map((c) => [c.courseNumber, c]));
+
+  const resolvedMandatory = variant.mandatoryCourseIds !== undefined
+    ? variant.mandatoryCourseIds
+        .map((id) => courseMap.get(id))
+        .filter((c): c is SpecializationCourseReference => c !== undefined)
+    : singleReq.mandatoryCourses;
+
+  const resolvedChoiceRules = variant.mandatoryChoiceGroups !== undefined
+    ? variant.mandatoryChoiceGroups
+        .filter((opts) => opts.length > 0)
+        .map((opts): SpecializationChoiceRule => ({
+          kind: 'choice_rule',
+          type: 'choose_1_from',
+          count: 1,
+          options: opts
+            .map((id) => courseMap.get(id))
+            .filter((c): c is SpecializationCourseReference => c !== undefined)
+            .map((c): SpecializationCourseOption => ({ kind: 'course', ...c })),
+        }))
+    : singleReq.mandatoryChoiceRules;
+
+  const resolvedSingle: SpecializationRequirementSet = {
+    ...singleReq,
+    mandatoryCourses: resolvedMandatory,
+    mandatoryChoiceRules: resolvedChoiceRules,
+  };
+  const resolvedReqsByMode = { ...group.requirementsByMode, single: resolvedSingle };
+  const legacyLists = buildGroupLegacyLists(group.courses, resolvedReqsByMode);
+
+  return {
+    ...group,
+    requirementsByMode: resolvedReqsByMode,
+    mandatoryCourses: legacyLists.mandatoryCourses,
+    mandatoryOptions: resolvedChoiceRules.map((rule) => collectRuleCourseNumbers(rule)),
+    electiveCourses: legacyLists.electiveCourses,
+  };
 }
 
 export function evaluateSpecializationGroup(

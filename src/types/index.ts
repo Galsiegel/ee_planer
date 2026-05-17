@@ -172,6 +172,11 @@ export interface SpecializationDiagnostic {
   specializationName?: string;
 }
 
+export interface SpecializationGroupYearVariant {
+  mandatoryCourseIds?: string[];   // replaces mandatory_courses for single mode
+  mandatoryChoiceGroups?: string[][];  // replaces mandatory_choice_rules: outer=rules, inner=choose-1-from options
+}
+
 export interface SpecializationGroup {
   id: string;
   trackId: TrackId;
