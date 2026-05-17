@@ -42,7 +42,8 @@ interface PlanState extends StudentPlan {
   hasPendingCloudSync: boolean;
   lastLocalEditAt: number;
 
-  setTrack: (trackId: TrackId) => void;
+  setTrack: (trackId: TrackId, catalogYear?: number | null) => void;
+  setCatalogYear: (year: number | null) => void;
   beginTrackSwitch: () => void;
   finishTrackSwitch: () => void;
   addCourseToSemester: (courseId: string, semester: number) => void;
@@ -215,6 +216,7 @@ const initialState: StudentPlan = {
   initializedTracks: [],
   targetGraduationSemesterId: null,
   loadProfile: 'fulltime' as const,
+  catalogYear: null,
 };
 
 function removeRecommendedCourses(
@@ -483,7 +485,7 @@ export const usePlanStore = create<PlanState>()(
       hasPendingCloudSync: false,
       lastLocalEditAt: 0,
 
-      setTrack: (newTrackId) =>
+      setTrack: (newTrackId, newCatalogYear) =>
         set((state) => {
           if (isShareReviewReadOnly(state)) return state;
           // Save current track state
@@ -495,6 +497,7 @@ export const usePlanStore = create<PlanState>()(
           if (savedTracks[newTrackId]) {
             return {
               ...planToStateFields(savedTracks[newTrackId], state),
+              catalogYear: newCatalogYear ?? savedTracks[newTrackId].catalogYear ?? null,
               savedTracks,
               _history: [],
               _initKey: state._initKey,
@@ -507,6 +510,7 @@ export const usePlanStore = create<PlanState>()(
           return {
             ...initialState,
             trackId: newTrackId,
+            catalogYear: newCatalogYear ?? null,
             semesters: { ...DEFAULT_SEMESTER_MAP },
             semesterOrder: [...DEFAULT_ORDER],
             savedTracks,
@@ -516,6 +520,12 @@ export const usePlanStore = create<PlanState>()(
             hasPendingCloudSync: state.hasPendingCloudSync,
             lastLocalEditAt: state.lastLocalEditAt,
           };
+        }),
+
+      setCatalogYear: (year) =>
+        set((state) => {
+          if (isShareReviewReadOnly(state)) return state;
+          return { catalogYear: year };
         }),
 
       beginTrackSwitch: () =>
@@ -532,6 +542,7 @@ export const usePlanStore = create<PlanState>()(
             _history: [],
             _initKey: 0,
             isSwitchingTrack: true,
+            catalogYear: null,
             hasPendingCloudSync: state.hasPendingCloudSync,
             lastLocalEditAt: state.lastLocalEditAt,
           };

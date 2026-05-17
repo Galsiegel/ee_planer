@@ -81,6 +81,19 @@ export interface TrackDefinition {
     required: number;     // "complete N out of courses.length"
     orGroups?: string[][];  // each inner array = mutually exclusive alternatives (only 1 slot counts)
   };
+  yearVariants?: Record<number, TrackYearVariant>;  // key = entry year (e.g. 2021)
+}
+
+export interface TrackYearVariant {
+  totalCreditsRequired?: number;
+  mandatoryCredits?: number;
+  electiveCreditsRequired?: number;
+  generalCreditsRequired?: number;
+  specializationGroupsRequired?: number;
+  semesterSchedule?: SemesterScheduleEntry[];
+  coreRequirement?: TrackDefinition['coreRequirement'];
+  labPool?: TrackDefinition['labPool'];
+  electivePolicy?: TrackElectivePolicy;
 }
 
 export interface SpecializationCourseReference {
@@ -272,6 +285,7 @@ export interface StudentPlan {
   miluimCredits?: number;  // 0–10: reserve duty credit reduction for כלל-טכניוני requirement
   englishScore?: number;   // 104–150: Amiram/Psychometric English score
   englishTaughtCourses?: string[];  // course IDs student marked as taught in English
+  catalogYear: number | null;  // entry year selected at track selection (e.g. 2021 for 2021/22)
   dismissedRecommendedCourses?: Record<string, string[]>;
   facultyColorOverrides?: Record<string, string>;  // faculty name → color key override
   coreToChainOverrides?: string[];  // course IDs the student released from core → count toward specialization chain

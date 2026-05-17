@@ -19,6 +19,7 @@ import { Toast } from './components/Toast';
 import { MobileSidebarDrawer } from './components/MobileSidebarDrawer';
 import { ExportShareModal } from './components/ExportShareModal';
 import { PrintView } from './components/PrintView';
+import { resolveTrackForYear } from './domain/resolveTrack';
 import { eeTrack } from './data/tracks/ee';
 import { csTrack } from './data/tracks/cs';
 import { eeMathTrack } from './data/tracks/ee_math';
@@ -797,6 +798,7 @@ function AppInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const trackId = usePlanStore((s) => s.trackId);
+  const catalogYear = usePlanStore((s) => s.catalogYear);
   const isSwitchingTrack = usePlanStore((s) => s.isSwitchingTrack);
   const hasPendingCloudSync = usePlanStore((s) => s.hasPendingCloudSync);
   const loadEnvelope = usePlanStore((s) => s.loadEnvelope);
@@ -861,7 +863,8 @@ function AppInner() {
   const trackDef = ALL_TRACKS.find((t) => t.id === trackId);
   if (!trackDef) return null;
 
-  return <PlannerApp courses={courses} trackDef={trackDef} />;
+  const resolvedTrackDef = resolveTrackForYear(trackDef, catalogYear);
+  return <PlannerApp courses={courses} trackDef={resolvedTrackDef} />;
 }
 
 export default function App() {

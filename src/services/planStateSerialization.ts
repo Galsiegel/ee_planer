@@ -47,5 +47,6 @@ export function serializePlanState(state: StudentPlan): StudentPlan {
     initializedTracks: [...(state.initializedTracks ?? [])],
     targetGraduationSemesterId: state.targetGraduationSemesterId ?? null,
     loadProfile: state.loadProfile ?? 'fulltime',
+    catalogYear: state.catalogYear ?? null,
   };
 }

@@ -308,6 +308,7 @@ export function PrintView({ courses, trackDef, catalog, includeGrades = true, ve
     doubleSpecializations: doubleSpecializations ?? [],
     binaryPass: binaryPass ?? {},
     facultyColorOverrides: facultyColorOverrides ?? {},
+    catalogYear: null,
   }), [
     trackId, semesters, completedCourses, selectedSpecializations, favorites,
     grades, substitutions, maxSemester, selectedPrereqGroups, summerSemesters,
