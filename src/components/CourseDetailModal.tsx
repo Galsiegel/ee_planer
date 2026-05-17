@@ -46,7 +46,6 @@ export function CourseDetailModal({ course, courses, semester, instanceKey, noAd
     courseChainAssignments: state.courseChainAssignments,
     setCourseChainAssignment: state.setCourseChainAssignment,
     setNoAdditionalCreditOverride: state.setNoAdditionalCreditOverride,
-    catalogYear: state.catalogYear,
   })));
 
   const chainMemberships = useMemo(() => {

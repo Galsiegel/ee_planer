@@ -75,6 +75,7 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     markCloudSyncPending,
     markCloudSyncSettled,
     copyShareReviewToEditableVersion,
+    catalogYear,
   } = usePlanStore(useShallow((state) => ({
     trackId: state.trackId,
     resetPlan: state.resetPlan,
@@ -97,6 +98,7 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     markCloudSyncPending: state.markCloudSyncPending,
     markCloudSyncSettled: state.markCloudSyncSettled,
     copyShareReviewToEditableVersion: state.copyShareReviewToEditableVersion,
+    catalogYear: state.catalogYear,
   })));
   const specializationCatalog = getTrackSpecializationCatalog(trackDef.id, catalogYear);
   const specs = specializationCatalog.groups;

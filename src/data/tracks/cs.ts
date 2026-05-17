@@ -52,6 +52,9 @@ export const csTrack: TrackDefinition = {
   ],
 
   yearVariants: {
+    // 2021/22: base schedule (no overrides)
+    2021: {},
+
     // 2022/23: Calculus 1M changed to 104036; sem 2 gains 104038 + 104136;
     //          sem 3 → 104214, 104215; sem 5 keeps 046267
     2022: {
