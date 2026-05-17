@@ -1139,7 +1139,9 @@ export const usePlanStore = create<PlanState>()(
             _history: [],
             _initKey: state._initKey + 1,
             isSwitchingTrack: false,
-            initializedTracks: (state.initializedTracks ?? []).filter((id) => id !== state.trackId),
+            initializedTracks: (state.initializedTracks ?? []).filter(
+              (id) => id !== state.trackId && !id.startsWith(`${state.trackId}:`),
+            ),
             targetGraduationSemesterId: null,
             loadProfile: 'fulltime' as const,
             hasPendingCloudSync: false,

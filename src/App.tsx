@@ -166,11 +166,12 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
   useEffect(() => {
     if (!trackId) return;
     if (shareMode?.isShareReview) return;
-    const key = `${trackId}_${_initKey}`;
+    const initializedTrackKey = catalogYear ? `${trackId}:${catalogYear}` : trackId;
+    const key = `${initializedTrackKey}_${_initKey}`;
     if (initialized.current.has(key)) return;
 
     // Cross-reload guard: if this track was already initialized in a previous session, skip
-    if ((initializedTracks ?? []).includes(trackId)) {
+    if ((initializedTracks ?? []).includes(initializedTrackKey)) {
       initialized.current.add(key); // prevent further in-session re-runs
       return;
     }
@@ -191,11 +192,11 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
           }
         }
       }
-      markTrackInitialized(trackId);
+      markTrackInitialized(initializedTrackKey);
     } finally {
       suppressAutoInitCloudPending.current = false;
     }
-  }, [shareMode, trackId, _initKey, semesters, trackDef.semesterSchedule, courses, addCourseToSemester, dismissedRecommendedCourses, englishScore, initializedTracks, markTrackInitialized]);
+  }, [shareMode, trackId, catalogYear, _initKey, semesters, trackDef.semesterSchedule, courses, addCourseToSemester, dismissedRecommendedCourses, englishScore, initializedTracks, markTrackInitialized]);
 
   useEffect(() => {
     // Any share route is isolated from the owner's personal cloud document.

@@ -199,7 +199,7 @@ test('App sync logic uses the shared envelope helpers instead of ad-hoc serializ
   );
   assert.match(
     appSource,
-    /suppressAutoInitCloudPending\.current = true;[\s\S]*markTrackInitialized\(trackId\);[\s\S]*suppressAutoInitCloudPending\.current = false;/,
+    /suppressAutoInitCloudPending\.current = true;[\s\S]*markTrackInitialized\([^)]*\);[\s\S]*suppressAutoInitCloudPending\.current = false;/,
     'App should bracket track auto-initialization so recommended seeding does not look like a user edit',
   );
   assert.match(

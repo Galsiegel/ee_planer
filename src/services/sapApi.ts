@@ -109,6 +109,7 @@ export async function fetchCourses(): Promise<Map<string, SapCourse>> {
   const LEGACY_COURSES: Record<string, { name: string; credits: number }> = {
     '01130013': { name: 'פיזיקה 1מ', credits: 4 },
     '01040036': { name: 'משוואות דיפרנציליות רגילות', credits: 3.5 },
+    '01040035': { name: "מד\"ר ואינפי 2ח'", credits: 5 },
     '01130014': { name: 'פיזיקה 2ממ', credits: 4 },
     // קורסים שהוצעו בסמסטרים ישנים (לא ב-last_semesters.json)
     '00460746': { name: 'אלגוריתמים ויישומים בראייה ממוחשבת', credits: 3 },
@@ -244,6 +245,7 @@ export async function fetchCourses(): Promise<Map<string, SapCourse>> {
     '00460192': 'spring', // מערכות בקרה 2
     '00460968': 'spring', // מיקרו-עיבוד ומיקרו-מערכות אלקטרומכניות
     '00460205': 'spring', // מבוא לתורת הקידוד בתקשורת
+    '01040035': 'spring', // מד"ר ואינפי 2ח'
     '03260010': 'spring', // אופקים אתיים: חקר נוף המטאוורס (הישאם)
   };
   for (const fallbackCourse of teachingSemesterFallbackCourses) {
