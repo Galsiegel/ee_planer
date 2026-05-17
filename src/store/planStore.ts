@@ -8,6 +8,7 @@ import { eePhysicsTrack } from '../data/tracks/ee_physics';
 import { eeCombinedTrack } from '../data/tracks/ee_combined';
 import { ceTrack } from '../data/tracks/ce';
 import { getAllScheduledCourseIds } from '../data/tracks/semesterSchedule';
+import { getAvailableYears, resolveTrackForYear } from '../domain/resolveTrack';
 import {
   clearRepeatableCourseSemesterGrade,
   gradeKey,
@@ -132,6 +133,16 @@ const CS_ADDED_RECOMMENDED_COURSES: Record<number, string[]> = {
 
 const TRACKS = [eeTrack, csTrack, eeMathTrack, eePhysicsTrack, eeCombinedTrack, ceTrack];
 
+function getAllAutoSeededCourseIds(track: (typeof TRACKS)[number]): string[] {
+  const ids = new Set(getAllScheduledCourseIds(track));
+  for (const year of getAvailableYears(track)) {
+    for (const courseId of getAllScheduledCourseIds(resolveTrackForYear(track, year))) {
+      ids.add(courseId);
+    }
+  }
+  return [...ids];
+}
+
 // Sport/PE pool courses auto-placed in the unassigned column on first load.
 // Empty: sport appears in the recommended schedule (semesterSchedule); נבחרת users add it manually.
 export const AUTO_SEEDED_POOL_IDS: string[] = [];
@@ -140,7 +151,7 @@ const AUTO_SEEDED_COURSES_BY_TRACK = Object.fromEntries(
   TRACKS.map((track) => [
     track.id,
     new Set([
-      ...getAllScheduledCourseIds(track),
+      ...getAllAutoSeededCourseIds(track),
       ...AUTO_SEEDED_POOL_IDS,
     ]),
   ]),

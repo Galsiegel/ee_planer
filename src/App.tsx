@@ -65,11 +65,9 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     addCourseToSemester,
     loadEnvelope,
     _history,
-    _initKey,
     isSwitchingTrack,
     dismissedRecommendedCourses,
     englishScore,
-    initializedTracks,
     markTrackInitialized,
     versions,
     hasPendingCloudSync,
@@ -88,11 +86,9 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     addCourseToSemester: state.addCourseToSemester,
     loadEnvelope: state.loadEnvelope,
     _history: state._history,
-    _initKey: state._initKey,
     isSwitchingTrack: state.isSwitchingTrack,
     dismissedRecommendedCourses: state.dismissedRecommendedCourses,
     englishScore: state.englishScore,
-    initializedTracks: state.initializedTracks,
     markTrackInitialized: state.markTrackInitialized,
     versions: state.versions,
     hasPendingCloudSync: state.hasPendingCloudSync,
@@ -108,7 +104,6 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
   const degreeCompletion = useDegreeCompletionCheck(courses, trackDef, specializationCatalog, weightedAverage);
 
   const shareMode = useShareMode();
-  const initialized = useRef<Set<string>>(new Set());
   const { user } = useAuth();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -168,16 +163,6 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     if (!trackId) return;
     if (shareMode?.isShareReview) return;
     const initializedTrackKey = catalogYear ? `${trackId}:${catalogYear}` : trackId;
-    const key = `${initializedTrackKey}_${_initKey}`;
-    if (initialized.current.has(key)) return;
-
-    // Cross-reload guard: if this track was already initialized in a previous session, skip
-    if ((initializedTracks ?? []).includes(initializedTrackKey)) {
-      initialized.current.add(key); // prevent further in-session re-runs
-      return;
-    }
-
-    initialized.current.add(key);
 
     suppressAutoInitCloudPending.current = true;
     try {
@@ -197,7 +182,7 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     } finally {
       suppressAutoInitCloudPending.current = false;
     }
-  }, [shareMode, trackId, catalogYear, _initKey, semesters, trackDef.semesterSchedule, courses, addCourseToSemester, dismissedRecommendedCourses, englishScore, initializedTracks, markTrackInitialized]);
+  }, [shareMode, trackId, catalogYear, semesters, trackDef.semesterSchedule, courses, addCourseToSemester, dismissedRecommendedCourses, englishScore, markTrackInitialized]);
 
   useEffect(() => {
     // Any share route is isolated from the owner's personal cloud document.
