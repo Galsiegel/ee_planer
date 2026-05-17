@@ -35,6 +35,7 @@ import {
   getTrackSpecializationCatalog,
   reportTrackSpecializationDiagnostics,
 } from './domain/specializations';
+import { reportMissingStaticCourseReferences } from './domain/staticCourseDiagnostics';
 import { useShareMode } from './context/ShareModeContext';
 
 // UI timing constants
@@ -186,7 +187,7 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
       for (const entry of trackDef.semesterSchedule) {
         const ids = getRecommendedCourseIdsForEntry(entry, courses, englishScore);
         for (const id of ids) {
-          if (!allPlaced.has(id) && !alreadyInitialized.has(id) && courses.has(id) && !dismissedForTrack.has(id)) {
+          if (!allPlaced.has(id) && !alreadyInitialized.has(id) && !dismissedForTrack.has(id)) {
             addCourseToSemester(id, entry.semester);
             alreadyInitialized.add(id);
           }
@@ -810,7 +811,14 @@ function AppInner() {
 
   useEffect(() => {
     fetchCourses()
-      .then(setCourses)
+      .then((loadedCourses) => {
+        setCourses(loadedCourses);
+        reportMissingStaticCourseReferences(
+          ALL_TRACKS,
+          loadedCourses,
+          (track, year) => getTrackSpecializationCatalog(track.id, year),
+        );
+      })
       .catch((e) => {
         console.error(e);
         setError('שגיאה בטעינת נתוני הקורסים. אנא בדוק את חיבור האינטרנט.');

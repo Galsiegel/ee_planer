@@ -110,6 +110,8 @@ export async function fetchCourses(): Promise<Map<string, SapCourse>> {
     '01130013': { name: 'פיזיקה 1מ', credits: 4 },
     '01040036': { name: 'משוואות דיפרנציליות רגילות', credits: 3.5 },
     '01040035': { name: "מד\"ר ואינפי 2ח'", credits: 5 },
+    '01040221': { name: "פונקצ' מרוכבות והתמרות אינטגרליות", credits: 4 },
+    '01040223': { name: "מד\"ח וטורי פוריה", credits: 4 },
     '01130014': { name: 'פיזיקה 2ממ', credits: 4 },
     // קורסים שהוצעו בסמסטרים ישנים (לא ב-last_semesters.json)
     '00460746': { name: 'אלגוריתמים ויישומים בראייה ממוחשבת', credits: 3 },
