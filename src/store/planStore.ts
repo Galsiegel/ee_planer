@@ -45,6 +45,7 @@ interface PlanState extends StudentPlan {
 
   setTrack: (trackId: TrackId, catalogYear?: number | null) => void;
   setCatalogYear: (year: number | null) => void;
+  switchCatalogYear: (newYear: number, oldScheduledIds: string[]) => void;
   beginTrackSwitch: () => void;
   finishTrackSwitch: () => void;
   addCourseToSemester: (courseId: string, semester: number) => void;
@@ -537,6 +538,26 @@ export const usePlanStore = create<PlanState>()(
         set((state) => {
           if (isShareReviewReadOnly(state)) return state;
           return { catalogYear: year };
+        }),
+
+      switchCatalogYear: (newYear, oldScheduledIds) =>
+        set((state) => {
+          if (isShareReviewReadOnly(state)) return state;
+          const oldSet = new Set(oldScheduledIds);
+          const completedSet = new Set(state.completedCourses ?? []);
+          const newSemesters: typeof state.semesters = {};
+          for (const [key, ids] of Object.entries(state.semesters)) {
+            newSemesters[Number(key)] = (ids as string[]).filter(
+              (id) => !oldSet.has(id) || completedSet.has(id),
+            );
+          }
+          return {
+            catalogYear: newYear,
+            semesters: newSemesters,
+            initializedTracks: (state.initializedTracks ?? []).filter(
+              (id) => id !== state.trackId && !id.startsWith(`${state.trackId}:`),
+            ),
+          };
         }),
 
       beginTrackSwitch: () =>

@@ -19,7 +19,7 @@ import { Toast } from './components/Toast';
 import { MobileSidebarDrawer } from './components/MobileSidebarDrawer';
 import { ExportShareModal } from './components/ExportShareModal';
 import { PrintView } from './components/PrintView';
-import { resolveTrackForYear } from './domain/resolveTrack';
+import { resolveTrackForYear, getAvailableYears } from './domain/resolveTrack';
 import { eeTrack } from './data/tracks/ee';
 import { csTrack } from './data/tracks/cs';
 import { eeMathTrack } from './data/tracks/ee_math';
@@ -30,7 +30,7 @@ import type { SapCourse, TrackDefinition, VersionedPlanEnvelope } from './types'
 import { useRequirementsProgress, useWeightedAverage } from './hooks/usePlan';
 import { useDegreeCompletionCheck } from './hooks/useDegreeCompletionCheck';
 import { DegreeCompletionModal } from './components/DegreeCompletionModal';
-import { getRecommendedCourseIdsForEntry } from './data/tracks/semesterSchedule';
+import { getRecommendedCourseIdsForEntry, getAllScheduledCourseIds } from './data/tracks/semesterSchedule';
 import {
   getTrackSpecializationCatalog,
   reportTrackSpecializationDiagnostics,
@@ -53,7 +53,7 @@ function extractEnvelope(
   return buildEnvelopeFromState(state, { activeVersionUpdatedAt });
 }
 
-function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; trackDef: TrackDefinition }) {
+function PlannerApp({ courses, trackDef, availableYears }: { courses: Map<string, SapCourse>; trackDef: TrackDefinition; availableYears: number[] }) {
   const {
     trackId,
     resetPlan,
@@ -75,6 +75,8 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     markCloudSyncSettled,
     copyShareReviewToEditableVersion,
     catalogYear,
+    setCatalogYear,
+    switchCatalogYear,
   } = usePlanStore(useShallow((state) => ({
     trackId: state.trackId,
     resetPlan: state.resetPlan,
@@ -96,6 +98,8 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
     markCloudSyncSettled: state.markCloudSyncSettled,
     copyShareReviewToEditableVersion: state.copyShareReviewToEditableVersion,
     catalogYear: state.catalogYear,
+    setCatalogYear: state.setCatalogYear,
+    switchCatalogYear: state.switchCatalogYear,
   })));
   const specializationCatalog = getTrackSpecializationCatalog(trackDef.id, catalogYear);
   const specs = specializationCatalog.groups;
@@ -731,6 +735,20 @@ function PlannerApp({ courses, trackDef }: { courses: Map<string, SapCourse>; tr
                   {degreeCompletion?.result.isComplete ? '✓' : '🎓'}
                 </span>
               </button>
+              {availableYears.length > 0 && (
+                <select
+                  value={catalogYear ?? availableYears[0]}
+                  onChange={(e) => switchCatalogYear(Number(e.target.value), getAllScheduledCourseIds(trackDef))}
+                  className="text-sm border px-2 py-1.5 rounded-lg bg-transparent cursor-pointer"
+                  style={{ color: 'rgba(147,197,253,0.9)', borderColor: 'rgba(147,197,253,0.3)' }}
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y} style={{ background: '#1e3a5f' }}>
+                      {y}/{String(y + 1).slice(-2)}
+                    </option>
+                  ))}
+                </select>
+              )}
               <button
                 onClick={beginTrackSwitch}
                 className="text-sm border px-3 py-1.5 rounded-lg transition-colors"
@@ -788,11 +806,22 @@ function AppInner() {
   const [error, setError] = useState<string | null>(null);
   const trackId = usePlanStore((s) => s.trackId);
   const catalogYear = usePlanStore((s) => s.catalogYear);
+  const setCatalogYear = usePlanStore((s) => s.setCatalogYear);
   const isSwitchingTrack = usePlanStore((s) => s.isSwitchingTrack);
   const hasPendingCloudSync = usePlanStore((s) => s.hasPendingCloudSync);
   const loadEnvelope = usePlanStore((s) => s.loadEnvelope);
   const { user, loading: authLoading } = useAuth();
   const shareMode = useShareMode();
+
+  // Default to newest year for tracks with yearVariants when catalogYear is not set
+  // (handles old persisted plans that pre-date year selection)
+  useEffect(() => {
+    if (!trackId || catalogYear !== null) return;
+    const trackDef = ALL_TRACKS.find((t) => t.id === trackId);
+    if (!trackDef) return;
+    const years = getAvailableYears(trackDef);
+    if (years.length > 0) setCatalogYear(years[0]);
+  }, [trackId, catalogYear, setCatalogYear]);
 
   useEffect(() => {
     fetchCourses()
@@ -859,8 +888,9 @@ function AppInner() {
   const trackDef = ALL_TRACKS.find((t) => t.id === trackId);
   if (!trackDef) return null;
 
+  const availableYears = getAvailableYears(trackDef);
   const resolvedTrackDef = resolveTrackForYear(trackDef, catalogYear);
-  return <PlannerApp courses={courses} trackDef={resolvedTrackDef} />;
+  return <PlannerApp courses={courses} trackDef={resolvedTrackDef} availableYears={availableYears} />;
 }
 
 export default function App() {

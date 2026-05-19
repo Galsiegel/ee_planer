@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { TrackDefinition } from '../types';
 import { usePlanStore } from '../store/planStore';
 import { getAvailableYears } from '../domain/resolveTrack';
@@ -16,63 +15,10 @@ function formatYear(year: number): string {
 
 export function TrackSelector({ tracks }: { tracks: TrackDefinition[] }) {
   const setTrack = usePlanStore((s) => s.setTrack);
-  const [pendingTrack, setPendingTrack] = useState<TrackDefinition | null>(null);
 
   function handleTrackClick(track: TrackDefinition) {
     const years = getAvailableYears(track);
-    if (years.length === 0) {
-      setTrack(track.id);
-    } else {
-      setPendingTrack(track);
-    }
-  }
-
-  function handleYearSelect(year: number) {
-    if (!pendingTrack) return;
-    setTrack(pendingTrack.id, year);
-    setPendingTrack(null);
-  }
-
-  if (pendingTrack) {
-    const years = getAvailableYears(pendingTrack);
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center p-8 relative overflow-hidden"
-        style={{ background: 'linear-gradient(145deg, #0f172a 0%, #1e3a5f 45%, #1e4d93 100%)' }}
-      >
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,130,246,0.18) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 100% at 30% 100%, rgba(99,102,241,0.12) 0%, transparent 70%)' }} />
-
-        <div className="max-w-xl w-full relative z-10">
-          <button
-            onClick={() => setPendingTrack(null)}
-            className="mb-6 text-sm flex items-center gap-1"
-            style={{ color: 'rgba(147,197,253,0.8)' }}
-          >
-            ← חזרה לבחירת מסלול
-          </button>
-          <div className="text-center mb-8">
-            <span className="text-4xl">{TRACK_ICONS[pendingTrack.id] ?? '📚'}</span>
-            <h2 className="text-2xl font-bold text-white mt-3">{pendingTrack.name}</h2>
-            <p className="mt-1 text-sm" style={{ color: 'rgba(147,197,253,0.72)' }}>בחר שנת כניסה</p>
-          </div>
-          <div className="flex flex-col gap-3">
-            {years.map((year) => (
-              <button
-                key={year}
-                onClick={() => handleYearSelect(year)}
-                className="track-card rounded-2xl p-5 text-right transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)' }}
-              >
-                <span className="text-lg font-semibold text-white">
-                  שנת לימודים {formatYear(year)}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    setTrack(track.id, years.length > 0 ? years[0] : undefined);
   }
 
   return (
