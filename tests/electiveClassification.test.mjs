@@ -66,6 +66,7 @@ function loadTranspiledModule(relativePath) {
 }
 
 const { computeRequirementsProgress } = await loadTranspiledModule('src/hooks/usePlan.ts');
+const { resolveTrackForYear } = await loadTranspiledModule('src/domain/resolveTrack.ts');
 const { buildTrackSpecializationCatalogs } = await loadTranspiledModule('src/domain/specializations/engine.ts');
 const { eeTrack } = await loadTranspiledModule('src/data/tracks/ee.ts');
 const { csTrack } = await loadTranspiledModule('src/data/tracks/cs.ts');
@@ -302,6 +303,10 @@ function eeCombinedMandatoryProgress({
   includeFields = false,
   includeLabs = true,
 } = {}) {
+  // Test uses 2025 variant courses (01040012, 01040064), so resolve track for 2025.
+  // This ensures mandatory course set is built from the 2025 schedule, not the base (2021/22) schedule.
+  const eeCombinedTrack2025 = resolveTrackForYear(eeCombinedTrack, 2025);
+
   const semester4 = [
     '00440127',
     '00440131',
@@ -315,6 +320,7 @@ function eeCombinedMandatoryProgress({
   return computeRequirementsProgress(
     {
       semesters: {
+        // 2025 variant: uses 01040012 (Calculus 1M) instead of 01040031, and 01040064 as alt for 01040016
         1: ['00440102', '01040012', '01140020', '01140074', '02340117', '03240033', '01040064'],
         2: ['00440252', '01040013', '01040038', '01040136', '01140030', '01140076'],
         3: ['00440105', '00440268', '01040034', '01040214', '01040215', '01040220', '01140101'],
@@ -348,8 +354,8 @@ function eeCombinedMandatoryProgress({
       entrepreneurshipMinorEnabled: false,
     },
     eeCombinedMandatoryCourses,
-    eeCombinedTrack,
-    emptyCatalog(eeCombinedTrack.id),
+    eeCombinedTrack2025,
+    emptyCatalog(eeCombinedTrack2025.id),
     null,
   );
 }
