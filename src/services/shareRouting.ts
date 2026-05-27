@@ -5,7 +5,3 @@ export function parseShareHash(hash: string = window.location.hash): { shareId: 
   if (!match) return null;
   return { shareId: match[1] };
 }
-
-export function isShareRoute(): boolean {
-  return parseShareHash() !== null;
-}

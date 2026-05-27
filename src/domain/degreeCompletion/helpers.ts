@@ -530,6 +530,10 @@ export function buildRequirementChecks(
     countedCourseIds: idsForBuckets(assignments, ['faculty_elective', 'optional_lab', 'core']),
   });
 
+  // Excess faculty elective credits (beyond required) may overflow into the
+  // free-choice sub-bucket only — not into the sport or enrichment floors.
+  const facultyExcess = Math.max(0, progress.elective.earned - progress.elective.required);
+
   checks.push({
     id: 'total_credits',
     title: 'סך נקודות זכות',
@@ -565,14 +569,17 @@ export function buildRequirementChecks(
   }
 
   const breakdown = progress.generalElectivesBreakdown;
+  const freeChoiceGap = Math.max(0, breakdown.freeChoice.target - breakdown.freeChoice.recognized);
+  const overflowApplied = Math.min(facultyExcess, freeChoiceGap);
+  const generalEarnedAdjusted = breakdown.total.recognized + overflowApplied;
   checks.push({
     id: 'general_elective',
     title: 'קורסי בחירה כלל-טכניוניים',
-    earned: breakdown.total.recognized,
+    earned: generalEarnedAdjusted,
     required: breakdown.total.target,
     unit: 'credits',
-    status: deriveStatus(breakdown.total.recognized, breakdown.total.target),
-    missingValue: Math.max(0, breakdown.total.target - breakdown.total.recognized),
+    status: deriveStatus(generalEarnedAdjusted, breakdown.total.target),
+    missingValue: Math.max(0, breakdown.total.target - generalEarnedAdjusted),
     countedCourseIds: idsForBuckets(assignments, ['sport', 'melag', 'special_general', 'general_elective']),
   });
 

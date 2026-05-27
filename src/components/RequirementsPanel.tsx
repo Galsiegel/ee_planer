@@ -1,4 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import type { SapCourse } from '../types';
 import { useShallow } from 'zustand/react/shallow';
 import { usePlanStore } from '../store/planStore';
 import type {
@@ -84,6 +85,7 @@ interface ElectiveBreakdownProps {
     limit: number;
     courseIds: string[];
   };
+  courses: Map<string, SapCourse>;
   onSelectAssignment: (courseId: string, area: ElectiveCreditArea) => void;
 }
 
@@ -91,8 +93,10 @@ function ElectiveBreakdown({
   areaRequirements,
   assignmentChoices,
   externalFaculty,
+  courses,
   onSelectAssignment,
 }: ElectiveBreakdownProps) {
+  const [externalExpanded, setExternalExpanded] = useState(false);
   const showExternalFaculty = externalFaculty.limit > 0 && (externalFaculty.earned > 0 || externalFaculty.courseIds.length > 0);
   if (areaRequirements.length === 0 && assignmentChoices.length === 0 && !showExternalFaculty) {
     return null;
@@ -103,7 +107,13 @@ function ElectiveBreakdown({
       {showExternalFaculty && (
         <div>
           <div className="flex justify-between items-center gap-3 mb-1">
-            <span className="text-xs font-medium text-gray-700">קורסים מוכרים מפקולטות אחרות</span>
+            <button
+              onClick={() => setExternalExpanded(e => !e)}
+              className="flex items-center gap-1 text-xs font-medium text-gray-700 hover:text-purple-700 transition-colors"
+            >
+              <span>{externalExpanded ? '▾' : '▸'}</span>
+              <span>קורסים מוכרים מפקולטות אחרות</span>
+            </button>
             <span className="text-xs font-semibold shrink-0 text-gray-600">
               {formatCredits(externalFaculty.earned)} / {formatCredits(externalFaculty.limit)}
             </span>
@@ -114,6 +124,21 @@ function ElectiveBreakdown({
               style={{ width: `${Math.min(100, (externalFaculty.earned / externalFaculty.limit) * 100)}%` }}
             />
           </div>
+          {externalExpanded && externalFaculty.courseIds.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {externalFaculty.courseIds.map(id => {
+                const course = courses.get(id);
+                return (
+                  <li key={id} className="flex justify-between items-center gap-2 text-xs text-gray-600">
+                    <span className="truncate">{course?.name ?? id}</span>
+                    <span className="shrink-0 font-medium text-purple-700">
+                      {formatCredits(course?.credits ?? 0)} נק"ז
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       )}
 
@@ -547,6 +572,7 @@ function CompactRequirementRow({
 }
 
 interface Props {
+  courses: Map<string, SapCourse>;
   progress: {
     mandatory: { earned: number; required: number };
     elective: { earned: number; required: number };
@@ -607,7 +633,7 @@ interface Props {
   weightedAverage: number | null;
 }
 
-export const RequirementsPanel = memo(function RequirementsPanel({ progress, weightedAverage }: Props) {
+export const RequirementsPanel = memo(function RequirementsPanel({ progress, weightedAverage, courses }: Props) {
   const {
     trackId,
     setMiluimCredits,
@@ -802,6 +828,7 @@ export const RequirementsPanel = memo(function RequirementsPanel({ progress, wei
         areaRequirements={progress.electiveBreakdown.areaRequirements}
         assignmentChoices={progress.electiveBreakdown.assignmentChoices}
         externalFaculty={progress.electiveBreakdown.externalFaculty}
+        courses={courses}
         onSelectAssignment={setElectiveCreditAssignment}
       />
       {progress.coreRequirementProgress && (() => {

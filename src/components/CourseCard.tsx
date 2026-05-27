@@ -140,17 +140,16 @@ export const CourseCard = memo(function CourseCard({
         `}
       >
         {showCardActions && (
-          <div className="absolute top-0 left-0 flex items-center">
+          <div dir="ltr" className="absolute top-0 left-0 flex items-center">
           <button
             onPointerDown={(e) => {
-              e.preventDefault();
               e.stopPropagation();
             }}
             onClick={(e) => {
               e.stopPropagation();
               toggleFavorite(course.id);
             }}
-            className={`w-11 h-11 flex items-center justify-center text-sm leading-none transition-colors ${isFavorite ? 'text-amber-400' : 'text-slate-300 hover:text-amber-400'}`}
+            className={`w-14 h-14 flex items-center justify-center text-sm leading-none transition-colors ${isFavorite ? 'text-amber-400' : 'text-slate-300 hover:text-amber-400'}`}
             title={isFavorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
           >
             {isFavorite ? '★' : '☆'}
@@ -158,14 +157,13 @@ export const CourseCard = memo(function CourseCard({
           {semester !== undefined && (
             <button
               onPointerDown={(e) => {
-                e.preventDefault();
                 e.stopPropagation();
               }}
               onClick={(e) => {
                 e.stopPropagation();
                 removeCourseFromSemester(effectiveId, semester);
               }}
-              className="w-11 h-11 flex items-center justify-center text-xl leading-none font-semibold text-gray-300 hover:text-red-500 transition-colors"
+              className="w-14 h-14 flex items-center justify-center text-xl leading-none font-semibold text-gray-300 hover:text-red-500 transition-colors"
               title={semester === 0 ? 'הסר מהתכנית' : 'הסר מהסמסטר'}
               aria-label={semester === 0 ? 'הסר מהתכנית' : 'הסר מהסמסטר'}
             >
@@ -178,7 +176,6 @@ export const CourseCard = memo(function CourseCard({
         {showCardActions && semester !== undefined && (
           <button
             onPointerDown={(e) => {
-              e.preventDefault();
               e.stopPropagation();
             }}
             onClick={(e) => {
@@ -192,7 +189,7 @@ export const CourseCard = memo(function CourseCard({
           </button>
         )}
 
-        <p className={`text-xs font-semibold text-slate-800 leading-snug pt-0.5 ${showCardActions ? 'pr-11 pl-[5.5rem]' : ''}`}>{course.name}</p>
+        <p className={`text-xs font-semibold text-slate-800 leading-snug pt-0.5 ${showCardActions ? 'pr-11 pl-28' : ''}`}>{course.name}</p>
 
         {wrongSemesterType && (
           <p className="text-xs text-red-500 mt-0.5 px-4 leading-tight">

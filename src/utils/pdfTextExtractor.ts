@@ -4,10 +4,8 @@ import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
-/**
- * Extract all text lines from a PDF ArrayBuffer using pdfjs-dist.
- * Text items are grouped by Y coordinate to reconstruct logical lines.
- */
+type PdfTextItem = { str: string; transform: number[] };
+
 export async function extractLinesFromPdf(buffer: ArrayBuffer): Promise<string[]> {
   const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
   const allLines: string[] = [];
@@ -16,11 +14,10 @@ export async function extractLinesFromPdf(buffer: ArrayBuffer): Promise<string[]
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
 
-    // Group items by rounded Y coordinate to reconstruct lines
     const yMap = new Map<number, string[]>();
     for (const item of content.items) {
       if (!('str' in item)) continue;
-      const textItem = item as pdfjsLib.TextItem;
+      const textItem = item as PdfTextItem;
       const y = Math.round(textItem.transform[5]);
       const existing = yMap.get(y);
       if (existing) existing.push(textItem.str);

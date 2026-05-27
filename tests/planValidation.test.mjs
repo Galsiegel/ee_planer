@@ -22,7 +22,6 @@ function loadTranspiledModule(relativePath) {
 
 const { sanitizeStudentPlan, sanitizeEnvelope: sanitizeEnvelopeForClient } = await loadTranspiledModule('src/services/planValidation.ts');
 const { validateStudentPlanPayload } = await loadTranspiledModule('functions/src/security/planValidation.ts');
-const { sanitizePlanPayload } = await loadTranspiledModule('functions/src/services/planValidation.ts');
 
 function createPlanPayload() {
   return {
@@ -239,47 +238,21 @@ test('server security validator accepts current StudentPlan fields in plan and s
   assert.equal(validated.value.savedTracks.cs.loadProfile, 'working');
 });
 
-test('server service sanitizer accepts current StudentPlan fields in plan and savedTracks payloads', () => {
-  const sanitized = sanitizePlanPayload(createPlanPayload());
-
-  assert.equal(sanitized.roboticsMinorEnabled, true);
-  assert.equal(sanitized.entrepreneurshipMinorEnabled, true);
-  assert.equal(sanitized.quantumComputingMinorEnabled, true);
-  assert.deepEqual(sanitized.explicitSportCompletions, ['39480001']);
-  assert.deepEqual(sanitized.courseChainAssignments, { '02340117': 'chain-a' });
-  assert.deepEqual(sanitized.electiveCreditAssignments, { '01160210': 'physics' });
-  assert.deepEqual(sanitized.noAdditionalCreditOverrides, { '02340117_02340118': '02340117' });
-  assert.deepEqual(sanitized.savedTracks.cs.explicitSportCompletions, ['39480001']);
-  assert.deepEqual(sanitized.savedTracks.cs.courseChainAssignments, { '02340117': 'chain-a' });
-  assert.deepEqual(sanitized.savedTracks.cs.electiveCreditAssignments, { '01160210': 'physics' });
-  assert.deepEqual(sanitized.savedTracks.cs.noAdditionalCreditOverrides, {});
-  assert.equal(sanitized.savedTracks.cs.roboticsMinorEnabled, true);
-  assert.equal(sanitized.savedTracks.cs.entrepreneurshipMinorEnabled, false);
-  assert.equal(sanitized.savedTracks.cs.quantumComputingMinorEnabled, false);
-  assert.equal(sanitized.targetGraduationSemesterId, 8);
-  assert.equal(sanitized.savedTracks.cs.targetGraduationSemesterId, 8);
-  assert.equal(sanitized.loadProfile, 'working');
-  assert.equal(sanitized.savedTracks.cs.loadProfile, 'working');
-});
-
 test('cloud sync schema stays aligned for serialized StudentPlan fields', () => {
   const serializerSource = readFileSync(join(repoRoot, 'src/services/planStateSerialization.ts'), 'utf8');
   const clientValidatorSource = readFileSync(join(repoRoot, 'src/services/planValidation.ts'), 'utf8');
   const securityValidatorSource = readFileSync(join(repoRoot, 'functions/src/security/planValidation.ts'), 'utf8');
-  const serviceValidatorSource = readFileSync(join(repoRoot, 'functions/src/services/planValidation.ts'), 'utf8');
 
   for (const key of ['roboticsMinorEnabled', 'entrepreneurshipMinorEnabled', 'quantumComputingMinorEnabled']) {
     assert.match(serializerSource, new RegExp(`${key}: state\\.${key}`), `serializePlanState must include ${key}`);
     assert.match(clientValidatorSource, new RegExp(`['"]${key}['"]`), `client validator must allow ${key}`);
     assert.match(securityValidatorSource, new RegExp(`["']${key}["']`), `security validator must allow ${key}`);
-    assert.match(serviceValidatorSource, new RegExp(`${key}: cleanBoolean`), `service sanitizer must clean ${key}`);
   }
 
   for (const key of ['explicitSportCompletions', 'coreToChainOverrides', 'initializedTracks']) {
     assert.match(serializerSource, new RegExp(`${key}: \\[\\.\\.\\.`), `serializePlanState must include ${key}`);
     assert.match(clientValidatorSource, new RegExp(`['"]${key}['"]`), `client validator must allow ${key}`);
     assert.match(securityValidatorSource, new RegExp(`["']${key}["']`), `security validator must allow ${key}`);
-    assert.match(serviceValidatorSource, new RegExp(`${key}: cleanStringArray`), `service sanitizer must clean ${key}`);
   }
 
   assert.match(
@@ -297,16 +270,10 @@ test('cloud sync schema stays aligned for serialized StudentPlan fields', () => 
     /["']electiveCreditAssignments["']/,
     'security validator must allow electiveCreditAssignments',
   );
-  assert.match(
-    serviceValidatorSource,
-    /electiveCreditAssignments: cleanElectiveCreditAssignmentRecord/,
-    'service sanitizer must clean electiveCreditAssignments',
-  );
 
   for (const key of ['courseChainAssignments', 'noAdditionalCreditOverrides', 'targetGraduationSemesterId', 'loadProfile']) {
     assert.match(serializerSource, new RegExp(`${key}:`), `serializePlanState must include ${key}`);
     assert.match(clientValidatorSource, new RegExp(`['"]${key}['"]`), `client validator must allow ${key}`);
     assert.match(securityValidatorSource, new RegExp(`["']${key}["']`), `security validator must allow ${key}`);
-    assert.match(serviceValidatorSource, new RegExp(`${key}:`), `service sanitizer must clean ${key}`);
   }
 });

@@ -781,14 +781,14 @@ function PlannerApp({ courses, trackDef, availableYears }: { courses: Map<string
         <div className="flex flex-col md:flex-row md:gap-5">
           {/* Desktop sidebar — hidden on mobile */}
           <aside className="hidden md:flex md:w-64 shrink-0 flex-col gap-3.5 sticky top-20 self-start max-h-[calc(100vh-5rem)] overflow-y-auto">
-            <RequirementsPanel progress={progress} weightedAverage={weightedAverage} />
+            <RequirementsPanel progress={progress} weightedAverage={weightedAverage} courses={courses} />
             <SpecializationPanel catalog={specializationCatalog} courses={courses} />
             <ChainRecommendations catalog={specializationCatalog} courses={courses} trackDef={trackDef} />
           </aside>
 
           {/* Mobile drawer — md:hidden enforced inside component */}
           <MobileSidebarDrawer open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-            <RequirementsPanel progress={progress} weightedAverage={weightedAverage} />
+            <RequirementsPanel progress={progress} weightedAverage={weightedAverage} courses={courses} />
             <SpecializationPanel catalog={specializationCatalog} courses={courses} />
             <ChainRecommendations catalog={specializationCatalog} courses={courses} trackDef={trackDef} />
           </MobileSidebarDrawer>

@@ -18,3 +18,18 @@ SAP data encodes prerequisites in Hebrew: split on `" או "` (OR), then extract
 ## Do Not
 - Do not hardcode course lists that come from SAP — they change each semester.
 - Do not change the BASE_URL without updating the allowed domains in `.claude/settings.local.json`.
+
+## Removed (cleanup branch)
+Dead code and offline pipeline artifacts not used by the app build:
+
+| Removed | Reason |
+|---------|--------|
+| `src/constants.ts` | Empty deprecated `TRACK_SPECIALIZATIONS`; superseded by `src/domain/specializations/` |
+| `src/data/specializations/ee_specializations.ts` | Empty legacy stub; specializations load from `files/קבוצות התמחות/*.json` |
+| `src/components/DegreeCompletionPanel.tsx` | Never imported; UI lives in `DegreeCompletionModal.tsx` |
+| `useGeneralRequirements()` hook | Unused; `usePlan` calls `buildGeneralRequirementsProgress` directly |
+| `isShareRoute()` in `shareRouting.ts` | Unused; `Root.tsx` uses `parseShareHash` only |
+| `functions/src/services/planValidation.ts` | Duplicate of `functions/src/security/planValidation.ts` (routes use security module) |
+| `files/*.py`, `pinecone_*`, `tracks_clean_v*.json`, `courses_strict_v6.json`, `processed_sections*` | Azure/Pinecone catalog pipeline outputs; not imported by Vite or scripts |
+
+Runtime specialization data remains under `files/קבוצות התמחות/<track>/`.
